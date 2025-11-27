@@ -1,0 +1,35 @@
+from django import forms
+from .models import CustomUser
+from django.contrib.auth.forms import UserCreationForm #username, p1, p2
+import uuid #base64 unique key generator
+
+class StudentSignUpForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'email', 'password1', 'password2','resume', 'phone','profile_image']
+        
+
+    def save(self, commit=True):
+        user = super().save(commit=False) # dont save
+        base_username = user.email.split('@')[0] # amrita@gmail.com --> [amrita,gmail.com]
+        user.username = f"{base_username}_{uuid.uuid4().hex[:4]}" # this will generate username with hexadecimal value
+        user.roles = 'student'
+        if commit:
+            user.save()
+        return user
+    
+
+class RecruiterSignUpForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'email', 'password1', 'password2', 'phone','profile_image']
+        exclude = ['resume']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        base_username = user.email.split('@')[0]
+        user.username = f"{base_username}_{uuid.uuid4().hex[:4]}"
+        user.roles = 'recruiter'
+        if commit:
+            user.save()
+        return user
