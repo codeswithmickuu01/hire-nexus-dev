@@ -62,3 +62,13 @@ def delete_job(request, job_id):
         messages.success(request, 'Job deleted successfully.')
         return redirect('recruiter_dashboard')
     return render(request, 'jobs/recruiter_jobs.html', {'jobs': job})
+
+
+def view_all_student_jobs(request):
+    all_jobs = Job.objects.all().order_by('-created_at')
+    return render(request, 'jobs/all_student_jobs.html', {'job_data': all_jobs})
+    
+@login_required
+def view_job_details(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    return render(request, 'jobs/job_detail.html', {'job': job})
