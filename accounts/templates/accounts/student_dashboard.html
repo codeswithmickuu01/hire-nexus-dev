@@ -1,8 +1,74 @@
-{% extends 'accounts/base.html' %}
+{% extends 'accounts/base.html'%}
 {% block title %} Student Dashboard {% endblock %}
 
 {% block content %}
-<div container="row mb-4">
+
+<div class="row mb-4">
     <h2 class="text-primary mb-4">Welcome to Student Dashboard</h2>
+    <div class="row mb-4">
+        <div class="col-md-6">
+
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Total Jobs Available
+                    </h5>
+                    <p class="card-text fs-3">{{ total_jobs }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card text-white bg-info mb-3">
+
+            <div class="class-body">
+                <h5 class="card-title">Jobs you have applied</h5>
+                <p class="card-text fs-3">{{ jobs_applied }}</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+            <h5 class="title">Job Type Distribution</h5>
+            <canvas id="jobTypeChart" height="120"></canvas>
+        </div>
+
+
+        <a href="" class="btn btn w-100">View all Jobs </a>
+    </div>
+
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('jobTypeChart').getContext('2d')
+    const jobChart = new Chart(
+        ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_label| safe }},
+    datasets: [{
+        label: 'Application Count',
+        data: {{ chart_data| safe }},
+        backgroundColor: ['pink', 'blue', 'yellow'],
+        borderColor: ['red', 'blue', 'yellow'],
+        borderWidth: 1
+            }]
+        },
+    options: {
+        'responsive': true,
+            'scales': {
+            y: {
+                beginAtZero: true,
+                    precision: 0
+            }
+        }
+    }
+    });
+</script>
 {% endblock %}

@@ -5,7 +5,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .models import CustomUser
 from django.contrib.auth.decorators import login_required
-from jobs.models import Job
+from jobs.models import Job, Application
 from django.db.models import Count
 
 # Create your views here.
@@ -69,10 +69,6 @@ def custom_login(request):
     return render(request, 'accounts/login.html')
 
 @login_required
-def student_dashboard(request):
-    return render(request, 'accounts/student_dashboard.html')
-
-@login_required
 def recruiter_dashboard(request):
     user = request.user
     total_jobs = Job.objects.count()
@@ -92,3 +88,28 @@ def recruiter_dashboard(request):
 def custom_logout(request):
     logout(request)
     return redirect('login')
+
+
+@login_required
+def student_dashboard(request):
+    user = request.user
+    total_jobs = Job.objects.count()
+    jobs_applied = Application.objects.filter(student=user).count()
+    job_type_data = (
+        Job.objects.values('job_type').annotate(count=Count('job_type')).order_by('-count')
+    )
+
+    applications = Application.objects.filter(student = request.user)
+    unseen_count = applications.filter(status_notified=True).exclude(status='applied').count()
+
+    chart_label = [item['job_type'] for item in job_type_data]
+    chart_data = [item['count'] for item in job_type_data]
+    
+    return render(request, 'accounts/student_dashboard.html',{
+        'total_jobs': total_jobs,
+        'jobs_applied': jobs_applied,
+        'chart_label': chart_label,
+        'chart_data': chart_data,
+        'applications': applications,
+        'unseen_count': unseen_count,
+    })

@@ -74,11 +74,12 @@ def view_job_details(request, job_id):
     return render(request, 'jobs/job_detail.html', {'job': job})
 
 
+@login_required
 def apply_job(request, job_id):
     if not request.user.roles == 'student' or not request.user.is_authenticated:
         messages.error(request, "Only students can apply for jobs.")
         return redirect('login')
-    job = get_object_or_404(Job, id=job_id)
+    job = get_object_or_404(Job, id=job_id) # if not found, 404 error / if found, return job object
     already_applied = Application.objects.filter(job=job, student=request.user).exists()
     if already_applied:
         messages.warning(request, "You have already applied for this job.")
