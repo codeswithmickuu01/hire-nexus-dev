@@ -108,7 +108,26 @@ def student_dashboard(request):
     )
 
     applications = Application.objects.filter(student = request.user)
-    unseen_count = applications.filter(status_notified=True).exclude(status='applied').count()
+    # unseen_qs = applications.filter(status_notified=True).exclude(status='applied').select_related('job')
+    unseen_updates = (
+        applications
+        .filter(status_notified=True)
+        .exclude(status='applied')
+        .order_by('-applied_at')
+    )
+
+    # unseen_count = unseen_qs.count()
+    unseen_count = unseen_updates.count()
+    latest_updates = unseen_updates 
+    # print(f'Unseen Count {unseen_count}')
+
+    for app in unseen_qs.order_by('-applied_at'):
+        messages.info(
+            request,
+            f"Status Updated {app.job.title} -> {app.get_status_display()}"
+        )
+
+    unseen_qs.update(status_notified=False)
 
     chart_label = [item['job_type'] for item in job_type_data]
     chart_data = [item['count'] for item in job_type_data]
@@ -120,6 +139,50 @@ def student_dashboard(request):
         'chart_data': chart_data,
         'applications': applications,
         'unseen_count': unseen_count,
+    })
+
+@login_required
+def student_dashboard(request):
+    user = request.user
+
+    # Basic stats
+    total_jobs = Job.objects.count()
+    jobs_applied = Application.objects.filter(student=user).count()
+
+    # Chart data
+    job_type_data = (
+        Job.objects.values('job_type')
+        .annotate(count=Count('job_type'))
+        .order_by('-count')
+    )
+
+    chart_label = [item['job_type'] for item in job_type_data]
+    chart_data = [item['count'] for item in job_type_data]
+
+    # Student applications
+    applications = Application.objects.filter(student=user).select_related('job')
+
+   
+    unseen_updates = (
+        applications
+        .filter(status_notified=True)
+        .exclude(status='applied')
+        .order_by('-applied_at')
+    )
+
+    unseen_count = unseen_updates.count()
+    latest_updates = unseen_updates   # all unseen updates
+
+    return render(request, 'accounts/student_dashboard.html', {
+        'total_jobs': total_jobs,
+        'jobs_applied': jobs_applied,
+        'chart_label': chart_label,
+        'chart_data': chart_data,
+        'applications': applications,
+
+        # notifications
+        'unseen_count': unseen_count,
+        'latest_updates': latest_updates,
     })
 
 

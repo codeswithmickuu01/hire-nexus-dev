@@ -110,6 +110,7 @@ def update_application_status(request, application_id):
         if new_status in dict(APPLICATION_STATUS_CHOICES):
             application.status = new_status
             application.status_notified = True  # Reset notification flag
+            print('114',application.status_notified)
             application.save()
             messages.success(request,f"Application status updated to {new_status.title()} successfully")
         else:
